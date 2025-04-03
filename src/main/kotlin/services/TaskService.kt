@@ -1,9 +1,11 @@
-package it.fabiovokrri.service
+package it.fabiovokrri.services
 
-import it.fabiovokrri.database.model.Task
-import it.fabiovokrri.database.model.TaskStatus
-import it.fabiovokrri.database.repository.TaskRepository
+import it.fabiovokrri.models.Task
+import it.fabiovokrri.models.TaskStatus
+import it.fabiovokrri.repositories.TaskRepository
+import org.koin.core.annotation.Single
 
+@Single
 class TaskService(private val repository: TaskRepository) {
     suspend fun getAllTasks(): List<Task> = repository.getAllTasks()
     suspend fun getById(id: Long): Task? = repository.getById(id)

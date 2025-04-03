@@ -1,7 +1,7 @@
-package it.fabiovokrri.database.repository
+package it.fabiovokrri.repositories
 
-import it.fabiovokrri.database.model.Task
-import it.fabiovokrri.database.model.TaskStatus
+import it.fabiovokrri.models.Task
+import it.fabiovokrri.models.TaskStatus
 
 /**
  * Task repository

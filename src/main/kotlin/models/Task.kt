@@ -1,7 +1,6 @@
-package it.fabiovokrri.database.model
+package it.fabiovokrri.models
 
 import kotlinx.serialization.Serializable
-
 
 @Serializable
 data class Task(

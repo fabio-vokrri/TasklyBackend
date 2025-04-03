@@ -1,4 +1,4 @@
-package it.fabiovokrri
+package it.fabiovokrri.utils
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

@@ -1,62 +1,60 @@
-package it.fabiovokrri.database.repository
+package it.fabiovokrri.repositories
 
-import it.fabiovokrri.database.model.Task
-import it.fabiovokrri.database.model.TaskStatus
-import it.fabiovokrri.database.model.TaskTable
-import it.fabiovokrri.database.util.dbQuery
-import it.fabiovokrri.database.util.toTask
-import org.jetbrains.exposed.sql.*
+import it.fabiovokrri.database.tables.Tasks
+import it.fabiovokrri.models.Task
+import it.fabiovokrri.models.TaskStatus
+import it.fabiovokrri.utils.dbQuery
+import it.fabiovokrri.utils.toTask
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
+import org.koin.core.annotation.Single
 
-class OnlineTaskRepository(private val database: Database) : TaskRepository {
-
-    init {
-        transaction(database) {
-            SchemaUtils.create(TaskTable)
-        }
-    }
+@Single
+class OnlineTaskRepository : TaskRepository {
 
     override suspend fun getAllTasks(): List<Task> = dbQuery {
-        TaskTable.selectAll().map { it.toTask() }
+        Tasks.selectAll().map { it.toTask() }
     }
 
 
     override suspend fun getByTitle(title: String): Task? = dbQuery {
-        TaskTable.selectAll()
-            .where { TaskTable.title eq title }
+        Tasks.selectAll()
+            .where { Tasks.title eq title }
             .singleOrNull()
             ?.toTask()
 
     }
 
     override suspend fun getById(id: Long): Task? = dbQuery {
-        TaskTable.selectAll()
-            .where { TaskTable.id eq id }
+        Tasks.selectAll()
+            .where { Tasks.id eq id }
             .singleOrNull()
             ?.toTask()
     }
 
     override suspend fun getByStatus(status: TaskStatus): List<Task> = dbQuery {
-        TaskTable.selectAll()
-            .where { TaskTable.status eq status }
+        Tasks.selectAll()
+            .where { Tasks.status eq status }
             .map { it.toTask() }
     }
 
     override suspend fun getByPriority(priority: Int): List<Task> = dbQuery {
-        TaskTable.selectAll()
-            .where { TaskTable.priority eq priority }
+        Tasks.selectAll()
+            .where { Tasks.priority eq priority }
             .map { it.toTask() }
     }
 
     override suspend fun getByDueDate(dueDate: Long): List<Task> = dbQuery {
-        TaskTable.selectAll()
-            .where { TaskTable.dueDate eq dueDate }
+        Tasks.selectAll()
+            .where { Tasks.dueDate eq dueDate }
             .map { it.toTask() }
     }
 
     override suspend fun insert(task: Task): Boolean = dbQuery {
-        val updatedRows = TaskTable.insert {
+        val updatedRows = Tasks.insert {
             it[id] = task.id
             it[title] = task.title
             it[description] = task.description
@@ -69,8 +67,8 @@ class OnlineTaskRepository(private val database: Database) : TaskRepository {
     }
 
     override suspend fun update(task: Task): Boolean = dbQuery {
-        val updatedRows = TaskTable.update(
-            where = { TaskTable.id eq task.id },
+        val updatedRows = Tasks.update(
+            where = { Tasks.id eq task.id },
             limit = 1,
         ) {
             it[title] = task.title
@@ -84,7 +82,7 @@ class OnlineTaskRepository(private val database: Database) : TaskRepository {
     }
 
     override suspend fun delete(taskId: Long): Boolean = dbQuery {
-        val updatedRows = TaskTable.deleteWhere { TaskTable.id eq taskId }
+        val updatedRows = Tasks.deleteWhere { Tasks.id eq taskId }
         updatedRows > 0
     }
 }

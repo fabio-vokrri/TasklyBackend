@@ -1,4 +1,4 @@
-package it.fabiovokrri.database.util
+package it.fabiovokrri.utils
 
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
