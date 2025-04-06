@@ -9,7 +9,7 @@ import it.fabiovokrri.models.TaskStatus
 interface TaskRepository {
     suspend fun getAllTasks(): List<Task>
     suspend fun getById(id: Long): Task?
-    suspend fun getByTitle(title: String): Task?
+    suspend fun getByTitle(title: String): List<Task>
     suspend fun getByStatus(status: TaskStatus): List<Task>
     suspend fun getByPriority(priority: Int): List<Task>
     suspend fun getByDueDate(dueDate: Long): List<Task>

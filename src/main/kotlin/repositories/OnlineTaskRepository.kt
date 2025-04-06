@@ -20,12 +20,10 @@ class OnlineTaskRepository : TaskRepository {
     }
 
 
-    override suspend fun getByTitle(title: String): Task? = dbQuery {
+    override suspend fun getByTitle(title: String): List<Task> = dbQuery {
         Tasks.selectAll()
             .where { Tasks.title eq title }
-            .singleOrNull()
-            ?.toTask()
-
+            .map { it.toTask() }
     }
 
     override suspend fun getById(id: Long): Task? = dbQuery {

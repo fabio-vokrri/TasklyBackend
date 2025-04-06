@@ -14,23 +14,34 @@ fun Application.databaseRoutes() {
     val taskService by inject<TaskService>()
 
     routing {
-        route("/tasks") {
+        route("/v1/tasks") {
             get {
-                val tasks = taskService.getAllTasks()
-                call.respond(HttpStatusCode.OK, tasks)
+                // no filters
+                if (call.queryParameters.isEmpty()) {
+                    val tasks = taskService.getAllTasks()
+                    call.respond(HttpStatusCode.OK, tasks)
+
+                    return@get
+                }
+
+                // handles optional filtering
+                handleQueries(this, taskService)
             }
 
             post {
                 val task = call.receive<Task>()
-                val id = taskService.insert(task)
-                call.respond(HttpStatusCode.OK, id)
+                val inserted = taskService.insert(task)
+
+                if (inserted) call.respond(HttpStatusCode.OK)
+                else call.respond(HttpStatusCode.NotModified)
             }
 
             put {
                 val task = call.receive<Task>()
-                taskService.update(task)
+                val updated = taskService.update(task)
 
-                call.respond(HttpStatusCode.OK)
+                if (updated) call.respond(HttpStatusCode.OK)
+                else call.respond(HttpStatusCode.NotModified)
             }
 
             get("/{id}") {
@@ -40,39 +51,56 @@ fun Application.databaseRoutes() {
                 call.respond(HttpStatusCode.OK, task)
             }
 
-            get("/{title}") {
-                val title = call.parameters["title"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                val task = taskService.getByTitle(title) ?: return@get call.respond(HttpStatusCode.NotFound)
-
-                call.respond(HttpStatusCode.OK, task)
-            }
-
-            get("/{status}") {
-                val status = call.parameters["status"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                val tasks = try {
-                    taskService.getByStatus(TaskStatus.valueOf(status))
-                } catch (exception: IllegalArgumentException) {
-                    return@get call.respond(HttpStatusCode.BadRequest)
-                }
-
-                call.respond(HttpStatusCode.OK, tasks)
-            }
-
-            get("/{priority}") {
-                val priority =
-                    call.parameters["priority"]?.toInt() ?: return@get call.respond(HttpStatusCode.BadRequest)
-                val tasks = taskService.getByPriority(priority)
-
-                call.respond(HttpStatusCode.OK, tasks)
-            }
-
             delete("/{id}") {
                 val id = call.parameters["id"]?.toLong() ?: return@delete call.respond(HttpStatusCode.BadRequest)
-                val result = taskService.delete(id)
+                val deleted = taskService.delete(id)
 
-                if (result) call.respond(HttpStatusCode.OK)
+                if (deleted) call.respond(HttpStatusCode.OK)
                 else call.respond(HttpStatusCode.ExpectationFailed)
             }
+        }
+    }
+}
+
+/**
+ * Handles the query parameters in the given [context] via the [taskService].
+ * Handles one query parameter only: if multiple are passed, only the first one will be processed.
+ */
+private suspend fun handleQueries(context: RoutingContext, taskService: TaskService) = with(context.call) {
+    // queries tasks by the given title
+    request.queryParameters["title"]?.let { title ->
+        val tasks = taskService.getByTitle(title)
+        return respond(HttpStatusCode.OK, tasks)
+    }
+
+    // queries tasks by the given status
+    request.queryParameters["status"]?.let { status ->
+        return try {
+            val tasks = taskService.getByStatus(TaskStatus.valueOf(status))
+            respond(HttpStatusCode.OK, tasks)
+        } catch (exception: IllegalArgumentException) {
+            respond(HttpStatusCode.BadRequest, exception)
+        }
+
+    }
+
+    // queries tasks by the given priority
+    request.queryParameters["priority"]?.let { priority ->
+        return try {
+            val tasks = taskService.getByPriority(priority.toInt())
+            respond(HttpStatusCode.OK, tasks)
+        } catch (exception: NumberFormatException) {
+            respond(HttpStatusCode.BadRequest, exception)
+        }
+    }
+
+    // queries tasks by the given dueDate
+    request.queryParameters["dueDate"]?.let { dueDate ->
+        try {
+            val tasks = taskService.getByDueDate(dueDate.toLong())
+            respond(HttpStatusCode.OK, tasks)
+        } catch (exception: NumberFormatException) {
+            respond(HttpStatusCode.BadRequest, exception)
         }
     }
 }

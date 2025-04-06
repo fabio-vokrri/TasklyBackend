@@ -9,7 +9,7 @@ import org.koin.core.annotation.Single
 class TaskService(private val repository: TaskRepository) {
     suspend fun getAllTasks(): List<Task> = repository.getAllTasks()
     suspend fun getById(id: Long): Task? = repository.getById(id)
-    suspend fun getByTitle(title: String): Task? = repository.getByTitle(title)
+    suspend fun getByTitle(title: String): List<Task> = repository.getByTitle(title)
     suspend fun getByStatus(status: TaskStatus): List<Task> = repository.getByStatus(status)
     suspend fun getByPriority(priority: Int): List<Task> = repository.getByPriority(priority)
     suspend fun getByDueDate(dueDate: Long): List<Task> = repository.getByDueDate(dueDate)
