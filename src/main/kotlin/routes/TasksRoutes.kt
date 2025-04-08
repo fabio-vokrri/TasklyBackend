@@ -10,7 +10,7 @@ import it.fabiovokrri.models.TaskStatus
 import it.fabiovokrri.services.TaskService
 import org.koin.ktor.ext.inject
 
-fun Application.databaseRoutes() {
+fun Application.taskRoutes() {
     val taskService by inject<TaskService>()
 
     routing {
@@ -25,7 +25,7 @@ fun Application.databaseRoutes() {
                 }
 
                 // handles optional filtering
-                handleQueries(this, taskService)
+                handleQueries(taskService)
             }
 
             post {
@@ -56,17 +56,17 @@ fun Application.databaseRoutes() {
                 val deleted = taskService.delete(id)
 
                 if (deleted) call.respond(HttpStatusCode.OK)
-                else call.respond(HttpStatusCode.ExpectationFailed)
+                else call.respond(HttpStatusCode.NotFound)
             }
         }
     }
 }
 
 /**
- * Handles the query parameters in the given [context] via the [taskService].
+ * Handles the query parameters in the given [RoutingContext] via the [taskService].
  * Handles one query parameter only: if multiple are passed, only the first one will be processed.
  */
-private suspend fun handleQueries(context: RoutingContext, taskService: TaskService) = with(context.call) {
+private suspend fun RoutingContext.handleQueries(taskService: TaskService): Unit = with(this.call) {
     // queries tasks by the given title
     request.queryParameters["title"]?.let { title ->
         val tasks = taskService.getByTitle(title)
@@ -96,7 +96,7 @@ private suspend fun handleQueries(context: RoutingContext, taskService: TaskServ
 
     // queries tasks by the given dueDate
     request.queryParameters["dueDate"]?.let { dueDate ->
-        try {
+        return try {
             val tasks = taskService.getByDueDate(dueDate.toLong())
             respond(HttpStatusCode.OK, tasks)
         } catch (exception: NumberFormatException) {

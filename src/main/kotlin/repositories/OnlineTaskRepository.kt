@@ -1,10 +1,10 @@
 package it.fabiovokrri.repositories
 
 import it.fabiovokrri.database.tables.Tasks
+import it.fabiovokrri.database.utils.dbQuery
+import it.fabiovokrri.database.utils.toTask
 import it.fabiovokrri.models.Task
 import it.fabiovokrri.models.TaskStatus
-import it.fabiovokrri.utils.dbQuery
-import it.fabiovokrri.utils.toTask
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -61,7 +61,7 @@ class OnlineTaskRepository : TaskRepository {
             it[status] = task.status
         }
 
-        updatedRows.insertedCount > 0
+        updatedRows.insertedCount == 1
     }
 
     override suspend fun update(task: Task): Boolean = dbQuery {
@@ -76,11 +76,11 @@ class OnlineTaskRepository : TaskRepository {
             it[status] = task.status
         }
 
-        updatedRows > 0
+        updatedRows == 1
     }
 
     override suspend fun delete(taskId: Long): Boolean = dbQuery {
-        val updatedRows = Tasks.deleteWhere { Tasks.id eq taskId }
-        updatedRows > 0
+        val updatedRows = Tasks.deleteWhere(limit = 1) { id eq taskId }
+        updatedRows == 1
     }
 }

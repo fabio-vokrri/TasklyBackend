@@ -1,9 +1,10 @@
-package it.fabiovokrri.utils
+package it.fabiovokrri.database
 
 import io.ktor.server.application.*
 import it.fabiovokrri.database.tables.Tasks
 import it.fabiovokrri.database.tables.Users
-import it.fabiovokrri.routes.databaseRoutes
+import it.fabiovokrri.routes.taskRoutes
+import it.fabiovokrri.routes.usersRoutes
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -22,5 +23,6 @@ fun Application.configureDatabase() {
         SchemaUtils.create(Users)
     }
 
-    databaseRoutes()
+    taskRoutes()
+    usersRoutes()
 }
