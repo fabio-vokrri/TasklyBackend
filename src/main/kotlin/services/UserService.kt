@@ -13,4 +13,7 @@ class UserService(private val userRepository: UserRepository) {
     suspend fun insert(user: User): Boolean = userRepository.insert(user)
     suspend fun update(user: User): Boolean = userRepository.update(user)
     suspend fun delete(id: Long): Boolean = userRepository.delete(id)
+
+    suspend fun validateCredentials(username: String, password: String): User? =
+        userRepository.validateCredentials(username, password)
 }

@@ -1,8 +1,8 @@
 package it.fabiovokrri.repositories
 
+import it.fabiovokrri.database.Database.dbQuery
+import it.fabiovokrri.database.mappers.toTask
 import it.fabiovokrri.database.tables.Tasks
-import it.fabiovokrri.database.utils.dbQuery
-import it.fabiovokrri.database.utils.toTask
 import it.fabiovokrri.models.Task
 import it.fabiovokrri.models.TaskStatus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

@@ -1,9 +1,9 @@
 package it.fabiovokrri.repositories
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import it.fabiovokrri.database.Database.dbQuery
+import it.fabiovokrri.database.mappers.toUser
 import it.fabiovokrri.database.tables.Users
-import it.fabiovokrri.database.utils.dbQuery
-import it.fabiovokrri.database.utils.toUser
 import it.fabiovokrri.models.User
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
