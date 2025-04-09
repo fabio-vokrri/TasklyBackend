@@ -2,6 +2,7 @@ package it.fabiovokrri.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -14,49 +15,51 @@ fun Application.taskRoutes() {
     val taskService by inject<TaskService>()
 
     routing {
-        route("/v1/tasks") {
-            get {
-                // no filters
-                if (call.queryParameters.isEmpty()) {
-                    val tasks = taskService.getAllTasks()
-                    call.respond(HttpStatusCode.OK, tasks)
+        authenticate {
+            route("/v1/tasks") {
+                get {
+                    // no filters
+                    if (call.queryParameters.isEmpty()) {
+                        val tasks = taskService.getAllTasks()
+                        call.respond(HttpStatusCode.OK, tasks)
 
-                    return@get
+                        return@get
+                    }
+
+                    // handles optional filtering
+                    handleQueries(taskService)
                 }
 
-                // handles optional filtering
-                handleQueries(taskService)
-            }
+                post {
+                    val task = call.receive<Task>()
+                    val inserted = taskService.insert(task)
 
-            post {
-                val task = call.receive<Task>()
-                val inserted = taskService.insert(task)
+                    if (inserted) call.respond(HttpStatusCode.OK)
+                    else call.respond(HttpStatusCode.NotModified)
+                }
 
-                if (inserted) call.respond(HttpStatusCode.OK)
-                else call.respond(HttpStatusCode.NotModified)
-            }
+                put {
+                    val task = call.receive<Task>()
+                    val updated = taskService.update(task)
 
-            put {
-                val task = call.receive<Task>()
-                val updated = taskService.update(task)
+                    if (updated) call.respond(HttpStatusCode.OK)
+                    else call.respond(HttpStatusCode.NotModified)
+                }
 
-                if (updated) call.respond(HttpStatusCode.OK)
-                else call.respond(HttpStatusCode.NotModified)
-            }
+                get("/{id}") {
+                    val id = call.parameters["id"]?.toLong() ?: return@get call.respond(HttpStatusCode.BadRequest)
+                    val task = taskService.getById(id) ?: return@get call.respond(HttpStatusCode.NotFound)
 
-            get("/{id}") {
-                val id = call.parameters["id"]?.toLong() ?: return@get call.respond(HttpStatusCode.BadRequest)
-                val task = taskService.getById(id) ?: return@get call.respond(HttpStatusCode.NotFound)
+                    call.respond(HttpStatusCode.OK, task)
+                }
 
-                call.respond(HttpStatusCode.OK, task)
-            }
+                delete("/{id}") {
+                    val id = call.parameters["id"]?.toLong() ?: return@delete call.respond(HttpStatusCode.BadRequest)
+                    val deleted = taskService.delete(id)
 
-            delete("/{id}") {
-                val id = call.parameters["id"]?.toLong() ?: return@delete call.respond(HttpStatusCode.BadRequest)
-                val deleted = taskService.delete(id)
-
-                if (deleted) call.respond(HttpStatusCode.OK)
-                else call.respond(HttpStatusCode.NotFound)
+                    if (deleted) call.respond(HttpStatusCode.OK)
+                    else call.respond(HttpStatusCode.NotFound)
+                }
             }
         }
     }

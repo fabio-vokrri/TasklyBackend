@@ -2,6 +2,7 @@ package it.fabiovokrri.database
 
 import io.ktor.server.application.*
 import it.fabiovokrri.database.tables.Tasks
+import it.fabiovokrri.database.tables.UserTasksCrossRef
 import it.fabiovokrri.database.tables.Users
 import it.fabiovokrri.routes.taskRoutes
 import it.fabiovokrri.routes.usersRoutes
@@ -21,6 +22,7 @@ fun Application.configureDatabase() {
     transaction {
         SchemaUtils.create(Tasks)
         SchemaUtils.create(Users)
+        SchemaUtils.create(UserTasksCrossRef)
     }
 
     taskRoutes()

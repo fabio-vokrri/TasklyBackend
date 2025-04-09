@@ -13,4 +13,6 @@ interface UserRepository {
     suspend fun insert(user: User): Boolean
     suspend fun update(user: User): Boolean
     suspend fun delete(id: Long): Boolean
+
+    suspend fun validateCredentials(username: String, password: String): User?
 }

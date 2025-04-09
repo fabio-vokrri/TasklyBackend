@@ -1,5 +1,6 @@
 package it.fabiovokrri.repositories
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import it.fabiovokrri.database.tables.Users
 import it.fabiovokrri.database.utils.dbQuery
 import it.fabiovokrri.database.utils.toUser
@@ -39,7 +40,7 @@ class OnlineUserRepository : UserRepository {
             it[id] = user.id
             it[name] = user.name
             it[email] = user.email
-            it[password] = password
+            it[password] = user.password!!
         }
 
         updatedRows.insertedCount == 1
@@ -50,7 +51,6 @@ class OnlineUserRepository : UserRepository {
             where = { Users.id eq user.id },
             limit = 1,
         ) {
-            it[id] = user.id
             it[name] = user.name
             it[email] = user.email
             it[password] = password
@@ -62,5 +62,20 @@ class OnlineUserRepository : UserRepository {
     override suspend fun delete(userId: Long): Boolean = dbQuery {
         val updatedRows = Users.deleteWhere { id eq userId }
         updatedRows == 1
+    }
+
+    override suspend fun validateCredentials(userName: String, password: String): User? = dbQuery {
+        val user: User = Users.selectAll()
+            .where { Users.name eq userName }
+            .firstOrNull()
+            ?.toUser()
+            ?: return@dbQuery null
+
+        val result = BCrypt.verifyer().verify(
+            password.toCharArray(),
+            user.password!!.toCharArray()
+        )
+
+        if (result.verified) user else null
     }
 }

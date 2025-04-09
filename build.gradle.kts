@@ -33,16 +33,21 @@ dependencies {
     implementation("io.ktor:ktor-server-core")
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("com.auth0:java-jwt")
+
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.ktor:ktor-server-netty")
     implementation("io.ktor:ktor-server-config-yaml")
+    implementation("at.favre.lib:bcrypt:0.10.2")
+
 
     // exposed
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("com.h2database:h2:$h2_version")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:3.1.1")
 
     // koin
     val koinAnnotationsVersion = "2.0.0"
