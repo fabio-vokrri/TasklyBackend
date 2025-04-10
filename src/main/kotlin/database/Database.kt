@@ -25,5 +25,5 @@ object Database {
         }
     }
 
-    suspend fun <T> dbQuery(block: () -> T): T = newSuspendedTransaction(Dispatchers.IO) { block() }
+    suspend fun <T> query(block: () -> T): T = newSuspendedTransaction(Dispatchers.IO) { block() }
 }

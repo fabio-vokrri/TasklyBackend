@@ -1,8 +1,9 @@
 package it.fabiovokrri.repositories
 
-import it.fabiovokrri.database.Database.dbQuery
+import it.fabiovokrri.database.Database.query
 import it.fabiovokrri.database.mappers.toTask
 import it.fabiovokrri.database.tables.Tasks
+import it.fabiovokrri.database.tables.UserTasksCrossRef
 import it.fabiovokrri.models.Task
 import it.fabiovokrri.models.TaskStatus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -15,45 +16,57 @@ import org.koin.core.annotation.Single
 @Single
 class OnlineTaskRepository : TaskRepository {
 
-    override suspend fun getAllTasks(): List<Task> = dbQuery {
-        Tasks.selectAll().map { it.toTask() }
+    override suspend fun getAllTasksOf(userId: Long): List<Task> = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
+            .map { it.toTask() }
     }
 
 
-    override suspend fun getByTitle(title: String): List<Task> = dbQuery {
-        Tasks.selectAll()
+    override suspend fun getByTitle(title: String, userId: Long): List<Task> = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
             .where { Tasks.title eq title }
             .map { it.toTask() }
     }
 
-    override suspend fun getById(id: Long): Task? = dbQuery {
-        Tasks.selectAll()
+    override suspend fun getById(id: Long, userId: Long): Task? = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
             .where { Tasks.id eq id }
             .singleOrNull()
             ?.toTask()
     }
 
-    override suspend fun getByStatus(status: TaskStatus): List<Task> = dbQuery {
-        Tasks.selectAll()
+    override suspend fun getByStatus(status: TaskStatus, userId: Long): List<Task> = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
             .where { Tasks.status eq status }
             .map { it.toTask() }
     }
 
-    override suspend fun getByPriority(priority: Int): List<Task> = dbQuery {
-        Tasks.selectAll()
+    override suspend fun getByPriority(priority: Int, userId: Long): List<Task> = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
             .where { Tasks.priority eq priority }
             .map { it.toTask() }
     }
 
-    override suspend fun getByDueDate(dueDate: Long): List<Task> = dbQuery {
-        Tasks.selectAll()
+    override suspend fun getByDueDate(dueDate: Long, userId: Long): List<Task> = query {
+        (UserTasksCrossRef innerJoin Tasks)
+            .selectAll()
+            .where { UserTasksCrossRef.userId eq userId }
             .where { Tasks.dueDate eq dueDate }
             .map { it.toTask() }
     }
 
-    override suspend fun insert(task: Task): Boolean = dbQuery {
-        val updatedRows = Tasks.insert {
-            it[id] = task.id
+    override suspend fun insert(task: Task, userId: Long): Boolean = query {
+        val updated1 = Tasks.insert {
             it[title] = task.title
             it[description] = task.description
             it[dueDate] = task.dueDate
@@ -61,10 +74,15 @@ class OnlineTaskRepository : TaskRepository {
             it[status] = task.status
         }
 
-        updatedRows.insertedCount == 1
+        val updated2 = UserTasksCrossRef.insert {
+            it[UserTasksCrossRef.userId] = userId
+            it[UserTasksCrossRef.taskId] = updated1[Tasks.id]
+        }
+
+        updated1.insertedCount == 1 && updated2.insertedCount == 1
     }
 
-    override suspend fun update(task: Task): Boolean = dbQuery {
+    override suspend fun update(task: Task, userId: Long): Boolean = query {
         val updatedRows = Tasks.update(
             where = { Tasks.id eq task.id },
             limit = 1,
@@ -79,7 +97,7 @@ class OnlineTaskRepository : TaskRepository {
         updatedRows == 1
     }
 
-    override suspend fun delete(taskId: Long): Boolean = dbQuery {
+    override suspend fun delete(taskId: Long, userId: Long): Boolean = query {
         val updatedRows = Tasks.deleteWhere(limit = 1) { id eq taskId }
         updatedRows == 1
     }

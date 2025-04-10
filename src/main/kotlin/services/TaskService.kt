@@ -7,14 +7,14 @@ import org.koin.core.annotation.Single
 
 @Single
 class TaskService(private val repository: TaskRepository) {
-    suspend fun getAllTasks(): List<Task> = repository.getAllTasks()
-    suspend fun getById(id: Long): Task? = repository.getById(id)
-    suspend fun getByTitle(title: String): List<Task> = repository.getByTitle(title)
-    suspend fun getByStatus(status: TaskStatus): List<Task> = repository.getByStatus(status)
-    suspend fun getByPriority(priority: Int): List<Task> = repository.getByPriority(priority)
-    suspend fun getByDueDate(dueDate: Long): List<Task> = repository.getByDueDate(dueDate)
+    suspend fun getAllTasksOf(userId: Long): List<Task> = repository.getAllTasksOf(userId)
+    suspend fun getById(id: Long, userId: Long): Task? = repository.getById(id, userId)
+    suspend fun getByTitle(title: String, userId: Long): List<Task> = repository.getByTitle(title, userId)
+    suspend fun getByStatus(status: TaskStatus, userId: Long): List<Task> = repository.getByStatus(status, userId)
+    suspend fun getByPriority(priority: Int, userId: Long): List<Task> = repository.getByPriority(priority, userId)
+    suspend fun getByDueDate(dueDate: Long, userId: Long): List<Task> = repository.getByDueDate(dueDate, userId)
 
-    suspend fun insert(task: Task): Boolean = repository.insert(task)
-    suspend fun update(task: Task): Boolean = repository.update(task)
-    suspend fun delete(taskId: Long): Boolean = repository.delete(taskId)
+    suspend fun insert(task: Task, userId: Long): Boolean = repository.insert(task, userId)
+    suspend fun update(task: Task, userId: Long): Boolean = repository.update(task, userId)
+    suspend fun delete(taskId: Long, userId: Long): Boolean = repository.delete(taskId, userId)
 }

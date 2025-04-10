@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.Table
 
 object UserTasksCrossRef : Table("user_tasks_crossref") {
     val userId = reference("user_id", Users.id, onDelete = ReferenceOption.CASCADE)
-    val taskId = reference("task_id", Tasks.id)
+    val taskId = reference("task_id", Tasks.id).uniqueIndex()
 
     override val primaryKey = PrimaryKey(userId, taskId)
 }

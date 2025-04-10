@@ -18,16 +18,11 @@ fun Route.authRoutes() {
     post("/register") {
         val user = call.receive<User>()
 
-        if (user.name.isBlank() || user.email.isBlank()) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
+        if (user.name.isBlank() || user.email.isBlank() || user.password.isNullOrBlank())
+            return@post call.respond(HttpStatusCode.BadRequest)
 
         val inserted = userService.insert(user)
-        if (!inserted) {
-            call.respond(HttpStatusCode.Conflict)
-            return@post
-        }
+        if (!inserted) return@post call.respond(HttpStatusCode.Conflict)
 
         val token = jwtService.generateToken(user)
         call.respond(HttpStatusCode.OK, AuthResponse(token, user))

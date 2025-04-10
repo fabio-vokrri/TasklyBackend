@@ -4,7 +4,7 @@ import it.fabiovokrri.models.TaskStatus
 import org.jetbrains.exposed.sql.Table
 
 object Tasks : Table("tasks") {
-    val id = long("id").autoIncrement()
+    val id = long("id").autoIncrement().uniqueIndex()
     val title = varchar("name", 255)
     val description = text("description")
     val dueDate = long("dueDate")
