@@ -8,12 +8,16 @@ import it.fabiovokrri.models.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.koin.core.annotation.Single
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Single
 class OnlineUserRepository : UserRepository {
-    override suspend fun getById(id: Long): User? = query {
+    override suspend fun getById(id: Uuid): User? = query {
         Users.selectAll()
-            .where { Users.id eq id }
+            .where { Users.id eq id.toJavaUuid() }
             .map { it.toUser() }
             .firstOrNull()
     }
@@ -40,7 +44,7 @@ class OnlineUserRepository : UserRepository {
         if (alreadyExists) return@query false
 
         val updatedRows = Users.insert {
-            it[id] = user.id
+            it[id] = user.id.toJavaUuid()
             it[name] = user.name
             it[email] = user.email
             it[password] = user.password!!
@@ -51,7 +55,7 @@ class OnlineUserRepository : UserRepository {
 
     override suspend fun update(user: User): Boolean = query {
         val updatedRows = Users.update(
-            where = { Users.id eq user.id },
+            where = { Users.id eq user.id.toJavaUuid() },
             limit = 1,
         ) {
             it[name] = user.name
@@ -62,8 +66,8 @@ class OnlineUserRepository : UserRepository {
         updatedRows == 1
     }
 
-    override suspend fun delete(userId: Long): Boolean = query {
-        val updatedRows = Users.deleteWhere { id eq userId }
+    override suspend fun delete(userId: Uuid): Boolean = query {
+        val updatedRows = Users.deleteWhere { id eq userId.toJavaUuid() }
         updatedRows == 1
     }
 
